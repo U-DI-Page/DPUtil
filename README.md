@@ -127,11 +127,11 @@ TYSdk.event.on('deviceDataChange', (data) => {
 ```tsx
 useEffect(() => {
 	DP.listenDps(openDoorDpCodes).reply(() => {
-      delayCall(() => {
-        // 更新主页开门记录
-        dispatch(actions.home.getRecordList({ devId, dpIds: openDoorDpIds, offset: 0, limit: 1 }));
-      }, 500);
-    });
+    delayCall(() => {
+      // 更新主页开门记录
+      dispatch(actions.home.getRecordList({ devId, dpIds: openDoorDpIds, offset: 0, limit: 1 }));
+    }, 500);
+  });
 
   DP.listenDps(alarmDpCodes).reply(() => {
     delayCall(() => {
