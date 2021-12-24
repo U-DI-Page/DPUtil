@@ -53,6 +53,7 @@
 - listen 应用场景
 
 ```tsx
+  // 原来的监听逻辑
   TYSdk.event.on('deviceDataChange', (data: { payload?: any }, waitTime = 0) => {
     const {
       unlock_request: unlockRequest,
@@ -75,7 +76,7 @@
       // 显示劫持告警弹窗
       ....
       }
-})
+  })
 
   // 用 DP 工具类拆分每个 dp 独立的监听逻辑
   DP.listen('video_request_realtime').reply((dpValue, waitTime = 0) => {
