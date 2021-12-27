@@ -7,8 +7,12 @@ NativeModules.TYRCTPublicModule = {};
 NativeModules.TYRCTDeviceModule = {};
 NativeModules.TYRCTPublicManager = {};
 NativeModules.TYRCTPanelManager = {};
+// NativeModules.TYRCTPanelDeviceManager = {
+//   getDpsTimeWithDevId: (...args) => 666
+// }
 
 global.console = {
+  ...console,
   error: jest.fn(),
   warn: jest.fn(),
 }

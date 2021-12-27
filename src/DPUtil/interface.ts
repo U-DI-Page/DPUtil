@@ -9,5 +9,16 @@ export type TimeoutListenerType<T> = (dpKey: string, timeout: number) => T;
 export type DpDataType = { payload: { [key: string]: any }; type: 'dpData' | 'devInfo' };
 export type DpsType = (dps: ObjType) => void;
 
-export type DpKeyType = string | string[] | ObjType;
-export type ObjType = { [key: string]: any };
+export type DpKeyType = string | string[] | symbol;
+export type ObjType = Record<string, any>;
+
+export type DpKeyListenMap<T> = {
+  [K in keyof T]: T[K]
+}
+
+interface DPPage {
+  unlock: number;
+  alarm: string;
+}
+
+type t = DpKeyListenMap<DPPage>;

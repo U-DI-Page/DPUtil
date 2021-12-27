@@ -54,8 +54,8 @@ class DPUtil implements IDP {
               ans[dp] = data.payload[dp];
               return ans;
             }, {} as ObjType);
-          } else {
-            dpValues = data.payload[dpKey.dpKey];
+          } else if(typeof dpKey === 'symbol') {
+            dpValues = data.payload[dpKey.description];
           }
 
           typeof ob[replyCb] === 'function' && ob[replyCb](dpValues, ...args);
@@ -71,15 +71,15 @@ class DPUtil implements IDP {
 
   listen = (dpKey: string) => {
     const symbolDpKey = dpKeyWrap(dpKey);
-    const ob = Observer.create<ObjType>(symbolDpKey);
-    return this.observerList.setT<ObjType, Observer<ObjType>>(symbolDpKey, ob);
+    const ob = Observer.create<symbol>(symbolDpKey);
+    return this.observerList.setT<symbol, Observer<symbol>>(symbolDpKey, ob);
   };
 
   listemWithinTime = (dpKey: string, timeout = 10 * 1000) => {
     const symbolDpKey = dpKeyWrap(dpKey);
-    const tob = TimeObserver.createTimeObserver<ObjType>(symbolDpKey, timeout);
+    const tob = TimeObserver.createTimeObserver<symbol>(symbolDpKey, timeout);
     tob[observerList] = this.observerList;
-    return this.observerList.setT<ObjType, TimeObserver<ObjType>>(symbolDpKey, tob);
+    return this.observerList.setT<symbol, TimeObserver<symbol>>(symbolDpKey, tob);
   };
 
   listenDps = (dps: string[]) => {

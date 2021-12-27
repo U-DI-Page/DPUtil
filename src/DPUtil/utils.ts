@@ -22,9 +22,9 @@ export const getLastDpTime = (code: string): Promise<number> =>
     }
   });
 
-export const type = (obj: any) => {
-  return Object.prototype.toString.call(obj).match(/\[object (.*)\]/)[1];
-};
+// export const type = (obj: any) => {
+//   return Object.prototype.toString.call(obj).match(/\[object (.*)\]/)[1];
+// };
 
 /**
  * 获取一个 Observer 中 监听的 dp 上次上报的时间
@@ -42,12 +42,12 @@ export const getObserverLastDpTime = async (dpKey: DpKeyType) => {
     const time = await getLastDpTime(dpKey);
     return time;
   }
-  const time = await getLastDpTime(dpKey.dpKey);
+  const time = await getLastDpTime(dpKey.description);
   return time;
 };
 
 // 延时调用
-export const delayCall = (cb: () => void, delay = 3000) => {
+export const delayCall = (cb: () => void, delay = 3000): ReturnType<typeof setTimeout> => {
   const timer = setTimeout(() => {
     cb && cb();
     clearTimeout(timer);
@@ -56,4 +56,4 @@ export const delayCall = (cb: () => void, delay = 3000) => {
   return timer;
 };
 
-export const dpKeyWrap = (dpKey: DpKeyType) => ({ dpKey });
+export const dpKeyWrap = (dpKey: string) => Symbol(dpKey);

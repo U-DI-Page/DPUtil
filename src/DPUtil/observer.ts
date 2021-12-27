@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable max-classes-per-file */
 import has from 'lodash/has';
+import isEqual from 'lodash/isEqual';
 import {
   replyCb,
   timeoutCb,
@@ -50,24 +51,26 @@ export class Observer<T extends DpKeyType> implements IObserver<T> {
 
   [initObserver] = () => {
     getObserverLastDpTime(this[symbolDpKey]).then(dpsTime => {
-      console.log('initobserver', dpsTime);
+      // console.log('initobserver', dpsTime);
       this[lastReportTime] = dpsTime;
     });
   };
 
   [checkHasCurrentDp] = async (data: DpDataType, isMock: boolean) => {
     let dpKey = this[symbolDpKey];
-    if (typeof dpKey !== 'string' && !Array.isArray(dpKey)) dpKey = dpKey.dpKey;
-
     if (
       (typeof dpKey === 'string' && has(data.payload, dpKey)) ||
+      (typeof dpKey === 'symbol' && has(data.payload, dpKey.description)) ||
       (dpKey instanceof Array && (dpKey as string[]).some(dp => has(data.payload, dp)))
     ) {
       const dpsTime = await getObserverLastDpTime(this[symbolDpKey]);
-      console.log('current dpsTime', dpsTime);
+      const isEqualTime = isEqual(this[lastReportTime], dpsTime);
+      // console.log('current dpsTime', dpsTime, isEqualTime);
       /** 如果最新的上报时间和上次的一样，则说明是设备缓存上报，忽略不计 */
-      if (this[lastReportTime] === dpsTime && !isMock) {
-        console.warn(`>>>>>---------Invalid Reported ${dpKey}------------<<<<<`);
+      if (isEqualTime && !isMock) {
+        const dpKeyText = typeof dpKey === 'symbol' ? dpKey.description : dpKey;
+        // eslint-disable-next-line no-console
+        console.warn(`>>>>>---------Invalid Reported ${dpKeyText}------------<<<<<`);
         return false;
       }
       this[lastReportTime] = dpsTime;
