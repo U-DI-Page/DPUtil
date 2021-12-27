@@ -1,0 +1,15 @@
+{
+  "name": "dp-util",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:U-DI-Page/DPUtil.git",
+  "author": "乌迪 <wudi.ye@tuya.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^27.0.3",
+    "jest": "^27.4.5"
+  },
+  "scripts": {
+    "test": "jest"
+  }
+}
