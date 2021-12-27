@@ -1,3 +1,5 @@
+import App from './App';
+
 const add = (a, b) => a + b;
 
 describe('test jest', () => {

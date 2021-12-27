@@ -6,8 +6,16 @@
   "author": "乌迪 <wudi.ye@tuya.com>",
   "license": "MIT",
   "devDependencies": {
+    "@babel/core": "^7.16.5",
+    "@babel/plugin-proposal-decorators": "^7.16.5",
+    "@babel/preset-env": "^7.16.5",
     "@types/jest": "^27.0.3",
-    "jest": "^27.4.5"
+    "babel-jest": "^27.4.5",
+    "jest": "^27.4.5",
+    "metro-react-native-babel-preset": "^0.66.2",
+    "react": "^17.0.2",
+    "react-native": "^0.66.4",
+    "tuya-panel-kit": "^4.8.3"
   },
   "scripts": {
     "test": "jest"
