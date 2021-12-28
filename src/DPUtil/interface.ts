@@ -19,6 +19,7 @@ export interface IDP{
   listenDps: (dps: string[]) => IObserver<any>;
   dispatch: (dps: Record<string, any>) => void;
 
+  onChange: (cb: CbWithDPValue<DpDataType>) => void;
   off: () => void;
   mock: (dps: Record<string, any>, ...args: any[]) => void;
 }

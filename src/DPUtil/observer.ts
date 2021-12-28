@@ -85,6 +85,7 @@ export class TimeObserver<D extends DpKeyType<string>> extends Observer<D> imple
 
     TOB[initObserver]();
     TOB[symbolTimer] = delayCall(() => {
+  
       TOB[timeoutCb]();
       TOB[observerList].delete(dpKey);
     }, timeout);
@@ -93,7 +94,7 @@ export class TimeObserver<D extends DpKeyType<string>> extends Observer<D> imple
   }
 
   reply: <V = any>(cb: CbWithDPValue<V>) => ITimeObserver<D> = (cb) => {
-    this[timeoutCb] = cb;
+    this[replyCb] = cb;
     return this;
   };
 

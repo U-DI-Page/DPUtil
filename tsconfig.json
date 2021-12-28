@@ -1,9 +1,5 @@
 {
   "compilerOptions": {
-    "baseUrl": "./",
-    "paths": {
-      "*": ["*"]
-    },
     "allowJs": true,
     "jsx":"react",
     "module": "esnext",
@@ -14,11 +10,8 @@
     "preserveConstEnums": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    // "experimentalDecorators": true, // 与 allowjs冲突
-    "outDir": "./lib",
-    "sourceMap": true,
     "skipLibCheck": true,
-    // "allowUnreachableCode": true,
+    "types": ["react-native"],
     "lib": [
       "es5",
       "es6",
@@ -28,16 +21,15 @@
       "es2018",
       "esnext"
     ],
-    "typeRoots": ["./@types/"]
   },
   "include": [
-    "./src/**/*",
-    "./src/res/*",
-    "@types/index.d.ts"
+    "src/**/*.ts",
   ],
   "exclude": [
-    "**/__tests__/*",
-    "./node_modules",
-    "./node_modules/@types/",
-  ]
+    "node_modules",
+    "babel.config.js",
+    "jest.config.js",
+    "jest.setup.js",
+    "commitlint.config.js"
+  ],
 }
