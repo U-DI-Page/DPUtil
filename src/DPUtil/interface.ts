@@ -1,24 +1,24 @@
-export type Fn = () => void;
-export type CbType<T> = (dpValue?: T, ...args: any[]) => void;
-export type ObserverFn<T, C> = (cb: C) => T;
-
-export type DPFn<T> = (dpValue: any) => T;
-export type DpListenType<T> = (dpKey: string) => T;
-export type ListenDpsType<T> = (dps: string[]) => T;
-export type TimeoutListenerType<T> = (dpKey: string, timeout: number) => T;
-export type DpDataType = { payload: { [key: string]: any }; type: 'dpData' | 'devInfo' };
-export type DpsType = (dps: ObjType) => void;
-
-export type DpKeyType = string | string[] | symbol;
+export type CbWithDPValue<T> = (dpValue?: T, ...args: any[]) => void;
+export type DpDataType = { payload: { [key: string]: any }; type: 'dpData' | 'devInfo' | 'deviceOnline' };
+export type DpKeyType<T> = T | T[] | symbol;
 export type ObjType = Record<string, any>;
 
-export type DpKeyListenMap<T> = {
-  [K in keyof T]: T[K]
+export interface IObserver<D extends DpKeyType<string>> {
+  reply: <V = any>(cb: CbWithDPValue<V>) => IObserver<D>;
+  catch: (cb: () => void) => void
 }
 
-interface DPPage {
-  unlock: number;
-  alarm: string;
+export interface ITimeObserver<D extends DpKeyType<string>> extends IObserver<D> {
+  reply: <V = any>(cb: CbWithDPValue<V>) => ITimeObserver<D>;
+  timeout: (cb: () => void) => ITimeObserver<D>;
 }
 
-type t = DpKeyListenMap<DPPage>;
+export interface IDP{
+  listen: (dpKey: string) => IObserver<any>;
+  listemWithinTime: (dpKey: string, timeout: number) => ITimeObserver<any>;
+  listenDps: (dps: string[]) => IObserver<any>;
+  dispatch: (dps: Record<string, any>) => void;
+
+  off: () => void;
+  mock: (dps: Record<string, any>, ...args: any[]) => void;
+}

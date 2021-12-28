@@ -29,11 +29,10 @@ export const getLastDpTime = (code: string): Promise<number> =>
 /**
  * 获取一个 Observer 中 监听的 dp 上次上报的时间
  */
-export const getObserverLastDpTime = async (dpKey: DpKeyType) => {
+export const getObserverLastDpTime = async (dpKey: any) => {
   if (Array.isArray(dpKey)) {
     const times = await Promise.all(dpKey.map(dp => () => getLastDpTime(dp)));
     return dpKey.reduce((dpsTime, dp, index) => {
-      // eslint-disable-next-line no-param-reassign
       dpsTime[dp] = times[index];
       return dpsTime;
     }, {} as ObjType);

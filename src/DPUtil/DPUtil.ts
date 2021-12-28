@@ -2,31 +2,19 @@ import { TYSdk } from 'tuya-panel-kit';
 import { Observer, TimeObserver } from './observer';
 import ChangeEventBus from './changeEventBus';
 import ObserverMap from './observerMap';
-import { replyCb, observerList, checkHasCurrentDp, symbolTimer } from './symbols';
+import { replyCb, checkHasCurrentDp, symbolTimer } from './symbols';
 import { dpKeyWrap } from './utils';
 import {
-  DpsType,
-  Fn,
   DpDataType,
-  DpListenType,
-  TimeoutListenerType,
-  ListenDpsType,
-  DpKeyType,
   ObjType,
+  IDP,
+  IObserver,
+  ITimeObserver,
+  DpKeyType,
 } from './interface';
 
-interface IDP {
-  listen: DpListenType<Observer<DpKeyType>>;
-  listemWithinTime: TimeoutListenerType<Observer<DpKeyType>>;
-  listenDps: ListenDpsType<Observer<DpKeyType>>;
-  dispatch: DpsType;
-  off: Fn;
-  mock: (dps: { [key: string]: any }, ...args: any[]) => void;
-  // unListen: (dpKey: DpKeyType) => void;
-}
-
 class DPUtil implements IDP {
-  private observerList: ObserverMap<DpKeyType>;
+  private observerList: ObserverMap<DpKeyType<string>, IObserver<DpKeyType<string>>>;
 
   static createPageDp = () => {
     return new DPUtil();
@@ -45,7 +33,8 @@ class DPUtil implements IDP {
         const pass = await ob[checkHasCurrentDp](data, isMock);
 
         if (pass) {
-          let dpValues;
+          let dpValues: any;
+
           if (typeof dpKey === 'string') {
             dpValues = data.payload[dpKey];
           } else if (Array.isArray(dpKey)) {
@@ -59,6 +48,7 @@ class DPUtil implements IDP {
           }
 
           typeof ob[replyCb] === 'function' && ob[replyCb](dpValues, ...args);
+
           /** 设备答复 去掉超时监听 */
           if (ob[symbolTimer] !== -1) {
             clearTimeout(ob[symbolTimer]);
@@ -71,20 +61,21 @@ class DPUtil implements IDP {
 
   listen = (dpKey: string) => {
     const symbolDpKey = dpKeyWrap(dpKey);
-    const ob = Observer.create<symbol>(symbolDpKey);
-    return this.observerList.setT<symbol, Observer<symbol>>(symbolDpKey, ob);
+    const ob = Observer.create<symbol>(symbolDpKey, this.observerList);
+  
+    return this.observerList.setT<symbol, IObserver<symbol>>(symbolDpKey, ob);
   };
 
   listemWithinTime = (dpKey: string, timeout = 10 * 1000) => {
     const symbolDpKey = dpKeyWrap(dpKey);
-    const tob = TimeObserver.createTimeObserver<symbol>(symbolDpKey, timeout);
-    tob[observerList] = this.observerList;
-    return this.observerList.setT<symbol, TimeObserver<symbol>>(symbolDpKey, tob);
+    const tob = TimeObserver.createTimeObserver<symbol>(symbolDpKey, timeout, this.observerList);
+
+    return this.observerList.setT<symbol, ITimeObserver<symbol>>(symbolDpKey, tob);
   };
 
   listenDps = (dps: string[]) => {
-    const ob = Observer.create<string[]>(dps);
-    return this.observerList.setT<string[], Observer<string[]>>(dps, ob);
+    const ob = Observer.create<string[]>(dps, this.observerList);
+    return this.observerList.setT<string[], IObserver<string[]>>(dps as string[], ob);
   };
 
   mock = (dps: { [key: string]: any }, ...args: any[]) => {
@@ -95,12 +86,6 @@ class DPUtil implements IDP {
     TYSdk.device.putDeviceData(dps);
     return this;
   };
-
-  // unListen = (dpKey: DpKeyType) => {
-  //   if (typeof dpKey === 'string') {
-  //     this.observerList.delete(dpKey);
-  //   }
-  // };
 
   off = () => {
     this.observerList.clear();

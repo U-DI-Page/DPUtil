@@ -1,15 +1,9 @@
 import ChangeEventBus from './changeEventBus';
-import { DpKeyType } from './interface';
-import { Observer } from './observer';
+import { IObserver } from './interface';
 
-type valueType<S> = S extends string
-  ? Observer<string>
-  : S extends string[]
-  ? Observer<string[]>
-  : Observer<symbol>;
 
-export default class ObserverMap<S extends DpKeyType> extends Map<S, valueType<S>> {
-  setT<SD extends S, O extends valueType<SD>>(key: SD, value: O): O {
+export default class ObserverMap<S extends any, V extends any> extends Map<S, V> {
+  setT<SD extends S, O extends V>(key: SD, value: O): O {
     /** 如果没有监听事件，重新监听 */
     if (!ChangeEventBus.isListening) {
       ChangeEventBus.listen();

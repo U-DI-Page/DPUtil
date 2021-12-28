@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
-/* eslint-disable max-classes-per-file */
 import has from 'lodash/has';
 import isEqual from 'lodash/isEqual';
 import {
@@ -12,52 +10,45 @@ import {
   initObserver,
   checkHasCurrentDp,
 } from './symbols';
-import { ObserverFn, CbType, DpKeyType, ObjType, DpDataType } from './interface';
+import { ObjType, DpDataType, IObserver, ITimeObserver, CbWithDPValue, DpKeyType } from './interface';
 import { delayCall, getObserverLastDpTime } from './utils';
 import ObserverMap from './observerMap';
 
-interface IObserver<T extends DpKeyType> {
-  reply: ObserverFn<Observer<T>, CbType<T>>;
-  catch: (err: Error) => Observer<T>;
-}
+export class Observer<D extends DpKeyType<string>> implements IObserver<D> {
+  static create<DS extends DpKeyType<string>>(dpKey: DS, obList: ObserverMap<any, any>): IObserver<DS> {
+    const ob = new Observer<DS>(dpKey, obList);
 
-interface ITimeObserver<T extends DpKeyType> extends IObserver<T> {
-  reply: ObserverFn<TimeObserver<T>, CbType<T>>;
-  timeout: ObserverFn<Observer<T>, CbType<T>>;
-}
-
-export class Observer<T extends DpKeyType> implements IObserver<T> {
-  static create<DS extends DpKeyType>(dpKey: DS): Observer<DS> {
-    const ob = new Observer<DS>(dpKey);
     ob[replyCb] = () => {};
     ob[initObserver]();
+
     return ob;
   }
 
-  constructor(dpKey: T) {
+  constructor(dpKey: D, obList: ObserverMap<any, any>) {
     this[symbolDpKey] = dpKey;
+    this[observerList] = obList;
   }
 
   /** 私有属性 */
   [symbolTimer] = -1;
 
-  [observerList]: ObserverMap<DpKeyType>;
+  [observerList]: Map<any, any>;
 
-  [symbolDpKey]: T;
+  [symbolDpKey]: D;
 
   [lastReportTime]: number | ObjType;
 
-  [replyCb]: CbType<T extends ObjType ? any : { [key: string]: any }>;
+  [replyCb]: CbWithDPValue<any>;
 
   [initObserver] = () => {
     getObserverLastDpTime(this[symbolDpKey]).then(dpsTime => {
-      // console.log('initobserver', dpsTime);
       this[lastReportTime] = dpsTime;
     });
   };
 
   [checkHasCurrentDp] = async (data: DpDataType, isMock: boolean) => {
     let dpKey = this[symbolDpKey];
+
     if (
       (typeof dpKey === 'string' && has(data.payload, dpKey)) ||
       (typeof dpKey === 'symbol' && has(data.payload, dpKey.description)) ||
@@ -65,7 +56,6 @@ export class Observer<T extends DpKeyType> implements IObserver<T> {
     ) {
       const dpsTime = await getObserverLastDpTime(this[symbolDpKey]);
       const isEqualTime = isEqual(this[lastReportTime], dpsTime);
-      // console.log('current dpsTime', dpsTime, isEqualTime);
       /** 如果最新的上报时间和上次的一样，则说明是设备缓存上报，忽略不计 */
       if (isEqualTime && !isMock) {
         const dpKeyText = typeof dpKey === 'symbol' ? dpKey.description : dpKey;
@@ -79,19 +69,19 @@ export class Observer<T extends DpKeyType> implements IObserver<T> {
     return false;
   };
 
-  reply = (cb: CbType<T extends ObjType ? any : { [key: string]: any }>) => {
+  reply: <V = any>(cb: CbWithDPValue<V>) => IObserver<D> = (cb) => {
     this[replyCb] = cb;
     return this;
   };
 
-  catch: (err: Error) => Observer<T>;
+  catch: () => IObserver<D>;
 }
 
-export class TimeObserver<T extends DpKeyType> extends Observer<T> implements ITimeObserver<T> {
-  [timeoutCb]: CbType<T>;
+export class TimeObserver<D extends DpKeyType<string>> extends Observer<D> implements ITimeObserver<D> {
+  [timeoutCb]: () => void;
 
-  static createTimeObserver<DS extends DpKeyType>(dpKey: DS, timeout: number): TimeObserver<DS> {
-    const TOB = new TimeObserver<DS>(dpKey);
+  static createTimeObserver<DS extends DpKeyType<string>>(dpKey: DS, timeout: number, obList: ObserverMap<any, any>): ITimeObserver<DS> {
+    const TOB = new TimeObserver<DS>(dpKey, obList);
 
     TOB[initObserver]();
     TOB[symbolTimer] = delayCall(() => {
@@ -102,9 +92,12 @@ export class TimeObserver<T extends DpKeyType> extends Observer<T> implements IT
     return TOB;
   }
 
-  reply: (cb: CbType<T extends string ? any : { [key: string]: any }>) => this;
+  reply: <V = any>(cb: CbWithDPValue<V>) => ITimeObserver<D> = (cb) => {
+    this[timeoutCb] = cb;
+    return this;
+  };
 
-  timeout = (cb: CbType<T>) => {
+  timeout: (cb: () => void) => ITimeObserver<D> = (cb) => {
     this[timeoutCb] = cb;
     return this;
   };
