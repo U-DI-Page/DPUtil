@@ -54,10 +54,11 @@ export class Observer<D extends DpKeyType<string>> implements IObserver<D> {
       (typeof dpKey === 'symbol' && has(data.payload, dpKey.description)) ||
       (dpKey instanceof Array && (dpKey as string[]).some(dp => has(data.payload, dp)))
     ) {
+      if(isMock) return true;
       const dpsTime = await getObserverLastDpTime(this[symbolDpKey]);
       const isEqualTime = isEqual(this[lastReportTime], dpsTime);
       /** 如果最新的上报时间和上次的一样，则说明是设备缓存上报，忽略不计 */
-      if (isEqualTime && !isMock) {
+      if (isEqualTime) {
         const dpKeyText = typeof dpKey === 'symbol' ? dpKey.description : dpKey;
         // eslint-disable-next-line no-console
         console.warn(`>>>>>---------Invalid Reported ${dpKeyText}------------<<<<<`);

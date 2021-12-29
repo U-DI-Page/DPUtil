@@ -58,7 +58,6 @@ class DPUtil implements IDP {
             }
 
             typeof ob[replyCb] === 'function' && ob[replyCb](dpValues, ...args);
-  
             /** 设备答复 去掉超时监听 */
             if (ob[symbolTimer] !== -1) {
               clearTimeout(ob[symbolTimer]);
