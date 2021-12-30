@@ -48,7 +48,6 @@ export class Observer<D extends DpKeyType<string>> implements IObserver<D> {
 
   [checkHasCurrentDp] = async (data: DpDataType, isMock: boolean) => {
     let dpKey = this[symbolDpKey];
-
     if (
       (typeof dpKey === 'string' && has(data.payload, dpKey)) ||
       (typeof dpKey === 'symbol' && has(data.payload, dpKey.description)) ||
@@ -79,14 +78,13 @@ export class Observer<D extends DpKeyType<string>> implements IObserver<D> {
 }
 
 export class TimeObserver<D extends DpKeyType<string>> extends Observer<D> implements ITimeObserver<D> {
-  [timeoutCb]: () => void;
+  [timeoutCb] = () => {};
 
   static createTimeObserver<DS extends DpKeyType<string>>(dpKey: DS, timeout: number, obList: ObserverMap<any, any>): ITimeObserver<DS> {
     const TOB = new TimeObserver<DS>(dpKey, obList);
 
     TOB[initObserver]();
     TOB[symbolTimer] = delayCall(() => {
-  
       TOB[timeoutCb]();
       TOB[observerList].delete(dpKey);
     }, timeout);

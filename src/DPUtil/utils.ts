@@ -1,6 +1,8 @@
 import { NativeModules } from 'react-native';
 import { TYSdk } from 'tuya-panel-kit';
-import { DpKeyType, ObjType } from './interface';
+import { DpDataType, DpKeyType, IObserver, ObjType } from './interface';
+import ObserverMap from './observerMap';
+import { checkHasCurrentDp, replyCb, symbolTimer } from './symbols';
 
 /**
  * 获取 dp 上次上报的时间
@@ -55,4 +57,49 @@ export const delayCall = (cb: () => void, delay = 3000): ReturnType<typeof setTi
   return timer;
 };
 
+/** dpKey Symbol化 */
 export const dpKeyWrap = (dpKey: string) => Symbol(dpKey);
+
+/** 判断结果 并行触发 每个 Observer 的回调 */
+export const asyncDispatchEachObserverLit = (
+  obList: ObserverMap<DpKeyType<string>, IObserver<DpKeyType<string>>>,
+  data: DpDataType,
+  isMock: boolean,
+  args: any[]
+): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    let compledCount = 0;
+    const totalCount = obList.size;
+    obList.forEach(async(ob, dpKey) => {
+      const pass = await ob[checkHasCurrentDp](data, isMock);
+
+      if (pass) {
+        let dpValues: any;
+
+        if (typeof dpKey === 'string') {
+          dpValues = data.payload[dpKey];
+        } else if (Array.isArray(dpKey)) {
+          dpValues = dpKey.reduce((ans, dp) => {
+            // eslint-disable-next-line no-param-reassign
+            ans[dp] = data.payload[dp];
+            return ans;
+          }, {} as ObjType);
+        } else if(typeof dpKey === 'symbol') {
+          dpValues = data.payload[dpKey.description];
+        }
+
+        typeof ob[replyCb] === 'function' && ob[replyCb](dpValues, ...args);
+        /** 设备答复 去掉超时监听 */
+        if (ob[symbolTimer] !== -1) {
+          clearTimeout(ob[symbolTimer]);
+          obList.delete(dpKey);
+        }
+      }
+
+      compledCount += 1;
+      if(compledCount === totalCount){
+        resolve()
+      }
+    });
+  });
+};
