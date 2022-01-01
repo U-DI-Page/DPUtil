@@ -1,0 +1,27 @@
+{
+  "name": "dp-util",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:U-DI-Page/DPUtil.git",
+  "author": "乌迪 <wudi.ye@tuya.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.16.5",
+    "@babel/plugin-proposal-decorators": "^7.16.5",
+    "@types/jest": "^27.0.3",
+    "@types/lodash": "^4.14.178",
+    "@types/react-native": "^0.66.10",
+    "@types/tuya-panel-kit": "^4.7.2",
+    "babel-jest": "^24.9.0",
+    "jest": "^24.9.0",
+    "lodash": "^4.17.21",
+    "metro-react-native-babel-preset": "^0.66.2",
+    "react": "^17.0.2",
+    "react-native": "^0.59.10",
+    "react-native-mock-render": "^0.1.9",
+    "tuya-panel-kit": "^4.8.3"
+  },
+  "scripts": {
+    "test": "jest --coverage"
+  }
+}

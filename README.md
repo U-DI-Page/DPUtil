@@ -53,31 +53,6 @@
 - listen 应用场景
 
 ```tsx
-  // 原来的监听逻辑
-  TYSdk.event.on('deviceDataChange', (data: { payload?: any }, waitTime = 0) => {
-    const {
-      unlock_request: unlockRequest,
-      alarm_request: alarmRequest,
-      video_request_realtime: videoRequestRealtime,
-    } = data?.payload;
-    // 视频请求
-    if (videoRequestRealtime) {
-      const IPCCode = parseIPCDpCode(videoRequestRealtime);
-      // console.log('IPCCode', IPCCode);
-      ....
-    }
-
-    // 在主页是显示远程开门弹窗，非主页还要显示提示弹窗
-    if (unlockRequest && canShowToastRef.current) {
-      ....
-    }
-
-    if (alarmRequest && canShowToastRef.current) {
-      // 显示劫持告警弹窗
-      ....
-      }
-  })
-
   // 用 DP 工具类拆分每个 dp 独立的监听逻辑
   DP.listen('video_request_realtime').reply((dpValue, waitTime = 0) => {
     ...
@@ -99,32 +74,8 @@
 监听开门和告警dp（多个dp）上报，更新主页记录
 
 ```tsx
-  TYSdk.event.on('deviceDataChange', (data) => {
-    let isChange = false;
-      let alarmChange = false;
-      _.forEach(data.payload, (val, key) => {
-        if (openDoorDpCodes.indexOf(key) > -1 && !isChange) {
-          isChange = true;
-          setTimeout(() => {
-            // 更新主页开门记录
-            dispatch(
-              actions.home.getRecordList({ devId, dpIds: openDoorDpIds, offset: 0, limit: 1 })
-            );
-          }, 500);
-        }
-        if (alarmDpCodes.indexOf(key) > -1 && !alarmChange) {
-          alarmChange = true;
-          setTimeout(() => {
-            dispatch(actions.home.getLastAlarmRecord());
-          }, 500);
-        }
-      });
-  });
-```
-
-改用 DP
-
-```tsx
+  // openDoorDpCodes = ['finger_print', ...]
+  // alarmDpCodes = ['alarm_request', ...]
   useEffect(() => {
     DP.listenDps(openDoorDpCodes).reply(() => {
       delayCall(() => {
@@ -149,56 +100,6 @@
     - 等待设备回复 reverse_lock 成功或者失败，如果不回复则进行超时处理
 
 ```tsx
-
-// 对于下发超时处理这种业务场景需要用 setTimeOut 进行计时
-let timeForceLockHandle: number;
-
-// 点击事件中开始计时
-const onEnforceLock = () => {
-  TYSdk.mobile.hideLoading();
-  TYSdk.device.putDeviceData({
-    enforce_lock_up: true,
-  });
-  TYSdk.mobile.showLoading();
-  clearTimeout(timeForceLockHandle);
-  timeForceLockHandle = setTimeout(() => {
-    TYSdk.mobile.hideLoading();
-    setType('imagefail');
-  }, 10000);
-};
-
-// 然后在 dpChange 事件里监听设备回复
-TYSdk.event.on('deviceDataChange', (data) => {
-	// 处理强制反锁结果
-  if (reverseLock !== undefined) {
-    TYSdk.mobile.hideLoading();
-    if (reverseLock) {
-      clearTimeout(timeForceLockHandle);
-      setloading({
-        ...loading,
-        success: true,
-        successtext: Strings.getLang('forceLocksuccess'),
-      });
-      setTimeout(() => {
-        closeModal();
-      }, 2000);
-    } else {
-      clearTimeout(timeForceLockHandle);
-      setloading({
-        ...loading,
-        error: true,
-        errortext: Strings.getLang('forceLockfail'),
-      });
-      setTimeout(() => {
-        closeModal();
-      }, 2000);
-    }
-  }
-});
-
-// 以上做法让代码结构非常的复杂，条理不清晰，代码容易失控
-// 用 DP 工具可以实现链式调用，分步进行，结构清晰明了
-
 const handleEnforceLock = () => {
   toastApi?.loading(Strings.getLang('forceLockLoading'));
   setEnforceBtnDisable(true);
@@ -228,7 +129,7 @@ const handleEnforceLock = () => {
 以上的链式调用是针对监听上报在下发之后进行的！还有另一种需要先监听的情况：a,b,c 三个面板，都有一个远程请求弹窗，a 面板如果点击开门按钮，设备回复一个开门结果，这时候在b、c面板也是要有对应的结果展示，所以这里的监听事件就要写在全局，按钮点击事件里的下发后就监听listenWithinTime 的 timeout 方法就行了。
 
 ```tsx
-  // 把 dp 的监听逻辑放在页面全局监听，下发之后监听超时事件
+  // 把 dp 的监听逻辑放在页面全局监听，下发之后只需要监听超时事件就行了
   useEffect(() => {
     DP.listen('remote_no_dp_key').reply((result) => {
       ....
@@ -270,29 +171,9 @@ dispatch 目前是直接调用 TYSdk.device.putDeviceData 方法，
 ---
 
 🙃需要注意的地方
-
-- 这个工具设计初衷是希望写代码过程中简化 dp 交互操作，提升灵活性，但是灵活性高如果乱用也会出现不好维护的问题，大家在用的时候还是注意下集中管理监听事件；
 - 如果出现两次监听同一个 dp 的情况，两个回调方法都会触发，如下，设备回复video_request_realtime 后 cb1 和 cb2都会触发，所以尽量不要重复监听。
 
 ```tsx
   DP.listen('video_request_realtime').reply(cb1);
-
   DP.listen('video_request_realtime').reply(cb2);
-
-  // 集中管理
-  useEffect(() => {
-    DP.listen('video_request_realtime').reply((dpValue) => {
-      ...
-    });
-    
-    DP.listen('unlock_request').reply(dpValue => {
-      ...
-    });
-    
-    DP.listen('alarm_request').reply(dpValue => {
-      if (canShowToastRef.current) {
-        ...
-      }
-    });
-}, [])
 ```
