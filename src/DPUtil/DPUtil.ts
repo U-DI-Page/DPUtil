@@ -30,20 +30,16 @@ class DPUtil implements IDP {
   }
 
   private dpDataChangeHandle = async(data: DpDataType, isMock = false, ...args: any[]) => {
-    try{
-      /** 透传 change 事件 */
-      if(this.onChangeList.size > 0){
-        this.onChangeList.forEach((cb) => {
-          typeof cb === 'function' && cb(data);
-        });
-      }
+    /** 透传 change 事件 */
+    if(this.onChangeList.size > 0){
+      this.onChangeList.forEach((cb) => {
+        typeof cb === 'function' && cb(data);
+      });
+    }
 
-      if (data.type !== 'dpData') return;
-      if (data.payload) {
-        await asyncDispatchEachObserverLit(this.observerList, data, isMock, args);
-      }
-    } catch (e){
-      console.log('error', e);
+    if (data.type !== 'dpData') return;
+    if (data.payload) {
+      await asyncDispatchEachObserverLit(this.observerList, data, isMock, args);
     }
   };
 

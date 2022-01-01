@@ -5,8 +5,11 @@ describe('DPUtil 测试用例', () => {
   /** 模拟上报 */
   const mockReport = async(dps) => {
     const tuyaKit = require('tuya-panel-kit');
-    const triggleListenCb = tuyaKit.TYSdk.event.on.mock.calls.find(call => call[0] === 'deviceDataChange')[1];
-    await triggleListenCb({ type: 'dpData', payload: dps });
+    const triggleListenCbs = tuyaKit.TYSdk.event.on.mock.calls.filter(call => call[0] === 'deviceDataChange');
+    
+    await Promise.all(
+      triggleListenCbs.map(([_, f]) => f({ type: 'dpData', payload: dps }))
+    )
   }
 
   beforeEach(() => {
@@ -89,5 +92,28 @@ describe('DPUtil 测试用例', () => {
 
     expect(onChangeCb).toHaveBeenCalledTimes(1);
 
+  })
+
+  test('多个 DP 实例监听', async() => {
+    const DP1 = DPUtil.createPageDp();
+    const DP2 = DPUtil.createPageDp();
+
+    const reply1 = jest.fn();
+    const reply2 = jest.fn();
+
+    DP1.listen('test').reply(reply1);
+    DP2.listen('test').reply(reply2);
+
+    await mockReport({ test: 666 });
+
+    expect(reply1).toHaveBeenCalledTimes(1);
+    expect(reply2).toHaveBeenCalledTimes(1);
+
+    DP1.off();
+
+    await mockReport({ test: 777 });
+
+    expect(reply1).toHaveBeenCalledTimes(1);
+    expect(reply2).toHaveBeenCalledTimes(2);
   })
 })
