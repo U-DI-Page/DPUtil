@@ -70,6 +70,7 @@ export const asyncDispatchEachObserverLit = (
   return new Promise((resolve, reject) => {
     let compledCount = 0;
     const totalCount = obList.size;
+    if(totalCount === 0) resolve();
     obList.forEach(async(ob, dpKey) => {
       const pass = await ob[checkHasCurrentDp](data, isMock);
 

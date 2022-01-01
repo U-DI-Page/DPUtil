@@ -44,8 +44,7 @@ describe('DPUtil 测试用例', () => {
     expect(dpsCb).toHaveBeenCalledTimes(1);
   })
 
-  test.only('监听超时事件 timeout, 完成后销毁', async() => {
-    // expect.assertions(4);
+  test('监听超时事件 timeout, 完成后销毁', async() => {
     const DP = DPUtil.createPageDp();
 
     const replyCb = jest.fn();
@@ -67,32 +66,28 @@ describe('DPUtil 测试用例', () => {
     expect(replyCb2).toHaveBeenCalledTimes(0);
 
     /** 单次事件 触发后将不在监听任何事件 */
-    // await mockReport({ hhh: 666, jjj: 777 });
-    // expect(replyCb).toHaveBeenCalledTimes(1);
-    // expect(timeoutCb).toHaveBeenCalledTimes(0);
-    // expect(timeoutCb2).toHaveBeenCalledTimes(1);
-    // expect(replyCb2).toHaveBeenCalledTimes(0);
+    await mockReport({ hhh: 666, jjj: 777 });
+    expect(replyCb).toHaveBeenCalledTimes(1);
+    expect(timeoutCb).toHaveBeenCalledTimes(0);
+    expect(timeoutCb2).toHaveBeenCalledTimes(1);
+    expect(replyCb2).toHaveBeenCalledTimes(0);
   })
 
-  // test('监听 onChange 事件', async(done) => {
-  //   expect.assertions(5);
-  //   const onChangeCb = jest.fn(data => {
-  //     expect(data.type).toBe('dpData');
-  //   });
+  test('监听 onChange 事件', async(done) => {
+    expect.assertions(3);
+    const DP = DPUtil.createPageDp();
 
-  //   const onChangeCb2 = jest.fn();
+    const onChangeCb = jest.fn(data => {
+      expect(data.type).toBe('dpData');
+      expect(data.payload).toEqual({ hah: 666 });
+      done();
+    });
 
-  //   DP.onChange(onChangeCb);
-  //   DP.onChange(onChangeCb2);
+    DP.onChange(onChangeCb);
 
-  //   DP.mock({ hah: 666 });
+    DP.mock({ hah: 666 });
 
-  //   expect(onChangeCb).toHaveBeenCalledTimes(1);
+    expect(onChangeCb).toHaveBeenCalledTimes(1);
 
-  //   DP.mock({ hah: 666 });
-
-  //   expect(onChangeCb).toHaveBeenCalledTimes(2);
-  //   expect(onChangeCb2).toHaveBeenCalledTimes(2);
-  //   done();
-  // })
+  })
 })
