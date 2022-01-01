@@ -3,12 +3,12 @@ import DPUtil from '../DPUtil';
 
 describe('DPUtil 测试用例', () => {
   /** 模拟上报 */
-  const mockReport = async(dps) => {
+  const mockReport = async(dps, type = 'dpData') => {
     const tuyaKit = require('tuya-panel-kit');
     const triggleListenCbs = tuyaKit.TYSdk.event.on.mock.calls.filter(call => call[0] === 'deviceDataChange');
     
     await Promise.all(
-      triggleListenCbs.map(([_, f]) => f({ type: 'dpData', payload: dps }))
+      triggleListenCbs.map(([_, f]) => f({ type, payload: dps }))
     )
   }
 
@@ -115,5 +115,31 @@ describe('DPUtil 测试用例', () => {
 
     expect(reply1).toHaveBeenCalledTimes(1);
     expect(reply2).toHaveBeenCalledTimes(2);
+  })
+
+  test('dispatch 返回新的实例', () => {
+    const DP = DPUtil.createPageDp();
+
+    const obj = DP.dispatch({  test: 666 });
+
+    expect(obj).toBeInstanceOf(DPUtil);
+  })
+
+  test('listen 事件过滤 type 非 dpData, onChange 事件透传', async(done) => {
+    const DP = DPUtil.createPageDp();
+
+    const reply = jest.fn();
+    const onChangeCb = jest.fn((data) => {
+      expect(data.type).toBe('devInfo');
+      done();
+    });
+
+    DP.listen('test').reply(reply);
+    DP.onChange(onChangeCb);
+
+    await mockReport({ test: 666 }, 'devInfo');
+
+    expect(reply).toHaveBeenCalledTimes(0);
+    expect(onChangeCb).toHaveBeenCalledTimes(1)
   })
 })

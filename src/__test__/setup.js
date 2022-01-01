@@ -20,7 +20,8 @@ jest.mock('tuya-panel-kit', () => {
       device: {
         getDpIdByCode: jest.fn(() => {
           return 'code';
-        })
+        }),
+        putDeviceData: jest.fn(),
       },
       devInfo: {}
     }
