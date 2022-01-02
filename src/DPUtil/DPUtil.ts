@@ -1,8 +1,7 @@
 import { TYSdk } from 'tuya-panel-kit';
 import { Observer, TimeObserver } from './observer';
-import ChangeEventBus from './changeEventBus';
 import ObserverMap from './observerMap';
-import { replyCb, checkHasCurrentDp, symbolTimer } from './symbols';
+import { hasListened } from './symbols';
 import { dpKeyWrap, asyncDispatchEachObserverLit } from './utils';
 import {
   DpDataType,
@@ -17,16 +16,15 @@ import {
 class DPUtil implements IDP {
   private observerList: ObserverMap<DpKeyType<string>, IObserver<DpKeyType<string>>>;
   private onChangeList: ObserverMap<DpKeyType<string>, (data: DpDataType) => void>;
+  [hasListened] = false; 
 
   static createPageDp = () => {
     return new DPUtil();
   };
 
   constructor() {
-    this.observerList = new ObserverMap();
-    this.onChangeList = new ObserverMap();
-
-    ChangeEventBus.setEvent(this.dpDataChangeHandle);
+    this.observerList = new ObserverMap(this);
+    this.onChangeList = new ObserverMap(this);
   }
 
   private dpDataChangeHandle = async(data: DpDataType, isMock = false, ...args: any[]) => {
@@ -42,6 +40,13 @@ class DPUtil implements IDP {
       await asyncDispatchEachObserverLit(this.observerList, data, isMock, args);
     }
   };
+
+  startListen = () => {
+    if(!this[hasListened]){
+      this[hasListened] = true;
+      TYSdk.event.on('deviceDataChange', this.dpDataChangeHandle);
+    }
+  }
 
   listen = (dpKey: string) => {
     const symbolDpKey = dpKeyWrap(dpKey);
@@ -78,6 +83,9 @@ class DPUtil implements IDP {
   off = () => {
     this.observerList.clear();
     this.onChangeList.clear();
+
+    TYSdk.event.off('deviceDataChange', this.dpDataChangeHandle);
+    this[hasListened] = false;
   };
 }
 

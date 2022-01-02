@@ -7,3 +7,4 @@ export const symbolTimer = Symbol('timer');
 export const lastReportTime = Symbol('lastReportTime');
 export const initObserver = Symbol('initObserver');
 export const getLastDpsTime = Symbol('getLastDpsTime');
+export const hasListened = Symbol('hasListened');

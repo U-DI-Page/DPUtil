@@ -14,12 +14,14 @@ export interface ITimeObserver<D extends DpKeyType<string>> extends IObserver<D>
 }
 
 export interface IDP{
+  startListen: () => void;
+  off: () => void;
+
   listen: (dpKey: string) => IObserver<any>;
   listemWithinTime: (dpKey: string, timeout: number) => ITimeObserver<any>;
   listenDps: (dps: string[]) => IObserver<any>;
   dispatch: (dps: Record<string, any>) => void;
 
   onChange: (cb: CbWithDPValue<DpDataType>) => void;
-  off: () => void;
   mock: (dps: Record<string, any>, ...args: any[]) => void;
 }

@@ -1,12 +1,19 @@
-import ChangeEventBus from './changeEventBus';
-import { IObserver } from './interface';
+import { IDP } from './interface';
+import { hasListened } from './symbols';
 
 
 export default class ObserverMap<S extends any, V extends any> extends Map<S, V> {
+  source: IDP;
+
+  constructor(source: IDP ){
+    super();
+    this.source = source;
+  }
+
   setT<SD extends S, O extends V>(key: SD, value: O): O {
     /** 如果没有监听事件，重新监听 */
-    if (!ChangeEventBus.isListening) {
-      ChangeEventBus.listen();
+    if (!this.source[hasListened]) {
+      this.source.startListen();
     }
 
     super.set(key, value);
