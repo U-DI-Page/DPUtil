@@ -13,7 +13,7 @@ export interface ITimeObserver<D extends DpKeyType<string>> extends IObserver<D>
   timeout: (cb: () => void) => ITimeObserver<D>;
 }
 
-export interface IDP{
+export interface IDP {
   startListen: () => void;
   off: () => void;
 

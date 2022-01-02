@@ -1,5 +1,5 @@
-import { IDP } from './interface';
 import { hasListened } from './symbols';
+import { IDP } from './interface';
 
 
 export default class ObserverMap<S extends any, V extends any> extends Map<S, V> {
