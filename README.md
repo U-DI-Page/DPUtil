@@ -177,3 +177,14 @@ dispatch 目前是直接调用 TYSdk.device.putDeviceData 方法，
   DP.listen('video_request_realtime').reply(cb1);
   DP.listen('video_request_realtime').reply(cb2);
 ```
+- 如果在 useEffect 中监听，依赖项发生变化，需要调用 DP.off 清空事件队列
+
+```tsx
+  useEffect(() => {
+    DP.listen('video_request_realtime').reply(cb1);
+
+    return () => {
+      DP.off();
+    }
+  }, [values])
+```
