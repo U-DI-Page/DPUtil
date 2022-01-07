@@ -55,7 +55,7 @@ class DPUtil implements IDP {
     return this.observerList.setT<symbol, IObserver<symbol>>(symbolDpKey, ob);
   };
 
-  listemWithinTime = (dpKey: string, timeout = 10 * 1000) => {
+  listenWithinTime = (dpKey: string, timeout = 10 * 1000) => {
     const symbolDpKey = dpKeyWrap(dpKey);
     const tob = TimeObserver.createTimeObserver<symbol>(symbolDpKey, timeout, this.observerList);
 

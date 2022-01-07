@@ -18,7 +18,7 @@ export interface IDP {
   off: () => void;
 
   listen: (dpKey: string) => IObserver<any>;
-  listemWithinTime: (dpKey: string, timeout: number) => ITimeObserver<any>;
+  listenWithinTime: (dpKey: string, timeout: number) => ITimeObserver<any>;
   listenDps: (dps: string[]) => IObserver<any>;
   dispatch: (dps: Record<string, any>) => void;
 
